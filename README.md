@@ -168,38 +168,7 @@ golangci-lint run
     ```
 
 ## Mejoras Futuras
-
-1. **Autenticación y Autorización**
-   - Implementar JWT para autenticación
-   - Control de acceso basado en roles (RBAC)
-
-2. **Documentación de la API**
-   - Integrar Swagger/OpenAPI
-   - Documentación detallada de endpoints
-
-3. **Manejo de Monedas**
-   - Soporte para múltiples monedas
-   - Conversión de divisas
-
-4. **Notificaciones**
-   - Integración con servicio de notificaciones
-   - Webhooks para eventos importantes
-
-5. **Monitoreo y Métricas**
-   - Integración con Prometheus
-   - Logging estructurado
-   - Trazabilidad distribuida
-
-6. **Escalabilidad**
-   - Implementar colas para procesamiento asíncrono
-   - Caché con Redis
-
-7. **Seguridad Adicional**
-   - Rate limiting
-   - Validación de entrada más robusta
-   - Protección contra ataques comunes
-
-8. **Testing**
-   - Pruebas de integración
-   - Pruebas de carga
-   - Pruebas de seguridad
+- Documentación de la API
+- Documentación detallada de endpoints
+- Monitoreo y Métricas
+- Caché en Base de datos
