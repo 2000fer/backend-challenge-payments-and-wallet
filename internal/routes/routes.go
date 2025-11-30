@@ -15,7 +15,10 @@ func SetupRoutes() *gin.Engine {
 	r.GET("/ping", handlers.Ping)
 
 	// API v1 routes
-	_ = r.Group("/api/v1")
+	apiV1 := r.Group("/api/v1")
+	apiV1.POST("/wallets/:user_id/payments", handlers.CreatePayment)
+	apiV1.GET("/wallets/:user_id/balance", handlers.GetBalance)
+	apiV1.GET("/wallets/:user_id/transactions", handlers.GetTransactions)
 
 	return r
 }
