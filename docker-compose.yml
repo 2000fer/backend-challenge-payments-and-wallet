@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/wallet_db?sslmode=disable
+      - GIN_MODE=debug
+      - SCOPE=local
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - wallet-network
+
+  db:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: wallet_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/local:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - wallet-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  wallet-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
