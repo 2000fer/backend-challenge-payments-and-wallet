@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -15,7 +16,7 @@ var (
 )
 
 type WalletService interface {
-	GetBalance(userID uint64) (float64, error)
+	GetBalance(ctx context.Context, userID uint64) (float64, error)
 }
 
 type GetBalanceResponse struct {
@@ -25,6 +26,7 @@ type GetBalanceResponse struct {
 
 func GetBalance(walletService WalletService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		ctx := c.Request.Context()
 		userID := c.Param("user_id")
 		userIDInt, err := strconv.ParseUint(userID, 10, 64)
 		if err != nil {
@@ -33,7 +35,7 @@ func GetBalance(walletService WalletService) gin.HandlerFunc {
 			return
 		}
 
-		balance, err := walletService.GetBalance(userIDInt)
+		balance, err := walletService.GetBalance(ctx, userIDInt)
 		if err != nil {
 			err = fmt.Errorf("%w: %w", ErrGettingBalance, err)
 			handleGetBalanceError(c, err)

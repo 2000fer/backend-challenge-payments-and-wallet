@@ -22,7 +22,7 @@ func main() {
 	gin.SetMode(cfg.GinMode)
 
 	// Initialize Gin router
-	r := api.Init()
+	r := api.Init(cfg)
 
 	// Server configuration
 	server := &http.Server{
