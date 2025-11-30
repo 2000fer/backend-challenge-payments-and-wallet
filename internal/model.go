@@ -1,5 +1,11 @@
 package internal
 
+type PaymentRequest struct {
+	UserID uint64 `json:"user_id"`
+	Method string `json:"method"`
+	Amount int    `json:"amount"`
+}
+
 type Transaction struct {
 	ID     string  `json:"id"`
 	Amount float64 `json:"amount"`

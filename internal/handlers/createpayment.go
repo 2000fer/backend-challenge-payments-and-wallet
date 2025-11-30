@@ -16,6 +16,10 @@ var (
 	ErrInvalidRequest = errors.New("invalid request")
 )
 
+type PaymentGatewayService interface {
+	CreatePayment(paymentRequest internal.PaymentRequest) (string, error)
+}
+
 type CreatePaymentRequest struct {
 	UserID uint64 `json:"user_id"`
 	Method string `json:"method"`
@@ -28,16 +32,30 @@ type CreatePaymentResponse struct {
 	Error         string `json:"error,omitempty"`
 }
 
-func CreatePayment(c *gin.Context) {
-	_, err := extractRequestParams(c)
-	if err != nil {
-		handleCreatePaymentError(c, err)
-		return
-	}
+func CreatePayment(paymentGatewayService PaymentGatewayService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		requestParams, err := extractRequestParams(c)
+		if err != nil {
+			handleCreatePaymentError(c, err)
+			return
+		}
 
-	c.JSON(http.StatusOK, CreatePaymentResponse{
-		Status: internal.PaymentStatusSuccess,
-	})
+		paymentRequest := internal.PaymentRequest{
+			UserID: requestParams.UserID,
+			Method: requestParams.Method,
+			Amount: requestParams.Amount,
+		}
+		transactionID, err := paymentGatewayService.CreatePayment(paymentRequest)
+		if err != nil {
+			handleCreatePaymentError(c, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, CreatePaymentResponse{
+			Status:        internal.PaymentStatusSuccess,
+			TransactionID: transactionID,
+		})
+	}
 }
 
 func handleCreatePaymentError(c *gin.Context, err error) {

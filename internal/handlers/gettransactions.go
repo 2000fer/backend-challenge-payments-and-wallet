@@ -11,23 +11,40 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type TransactionService interface {
+	GetTransactions(userID string) ([]internal.Transaction, error)
+}
+
+var (
+	ErrGettingTransactions = errors.New("failed to get transactions")
+)
+
 type GetTransactionsResponse struct {
 	Transactions []internal.Transaction `json:"transactions"`
 	Error        string                 `json:"error,omitempty"`
 }
 
-func GetTransactions(c *gin.Context) {
-	userID := c.Param("user_id")
-	_, err := strconv.ParseUint(userID, 10, 64)
-	if err != nil {
-		err = fmt.Errorf("%w: invalid user_id: %w", ErrInvalidRequest, err)
-		handleGetTransactionsError(c, err)
-		return
-	}
+func GetTransactions(transactionService TransactionService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.Param("user_id")
+		_, err := strconv.ParseUint(userID, 10, 64)
+		if err != nil {
+			err = fmt.Errorf("%w: invalid user_id: %w", ErrInvalidRequest, err)
+			handleGetTransactionsError(c, err)
+			return
+		}
 
-	c.JSON(http.StatusOK, GetTransactionsResponse{
-		Transactions: []internal.Transaction{},
-	})
+		transactions, err := transactionService.GetTransactions(userID)
+		if err != nil {
+			err = fmt.Errorf("%w: %w", ErrGettingTransactions, err)
+			handleGetTransactionsError(c, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, GetTransactionsResponse{
+			Transactions: transactions,
+		})
+	}
 }
 
 func handleGetTransactionsError(c *gin.Context, err error) {
@@ -38,6 +55,10 @@ func handleGetTransactionsError(c *gin.Context, err error) {
 
 	if errors.Is(err, ErrInvalidRequest) {
 		errorStatusCode = http.StatusBadRequest
+	}
+
+	if errors.Is(err, ErrGettingTransactions) {
+		errorStatusCode = http.StatusInternalServerError
 	}
 
 	c.JSON(errorStatusCode, GetTransactionsResponse{

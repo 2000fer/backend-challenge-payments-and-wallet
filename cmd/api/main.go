@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/2000fer/backend-challenge-payments-and-wallet/internal/api"
 	"github.com/2000fer/backend-challenge-payments-and-wallet/internal/config"
-	"github.com/2000fer/backend-challenge-payments-and-wallet/internal/routes"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +22,7 @@ func main() {
 	gin.SetMode(cfg.GinMode)
 
 	// Initialize Gin router
-	r := routes.SetupRoutes()
+	r := api.Init()
 
 	// Server configuration
 	server := &http.Server{
