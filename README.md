@@ -5,6 +5,9 @@ API RESTful para un sistema de billetera digital que permite a los usuarios real
 
 ## Decisiones Arquitectónicas
 
+### Diagramas de la aplicación
+- [Link a drawio](https://drive.google.com/file/d/1z3hZPaRPf4hjTbzDma9XA1UpBjjwaw66/view?usp=sharing)
+
 ### Arquitectura en Capas
 - **API Layer**: Maneja las solicitudes HTTP y el enrutamiento usando Gin
 - **Service Layer**: Contiene la lógica de negocio
