@@ -12,7 +12,7 @@ import (
 )
 
 type TransactionService interface {
-	GetTransactions(userID string) ([]internal.Transaction, error)
+	GetTransactions(userID uint64) ([]internal.Transaction, error)
 }
 
 var (
@@ -27,14 +27,14 @@ type GetTransactionsResponse struct {
 func GetTransactions(transactionService TransactionService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("user_id")
-		_, err := strconv.ParseUint(userID, 10, 64)
+		userIDInt, err := strconv.ParseUint(userID, 10, 64)
 		if err != nil {
 			err = fmt.Errorf("%w: invalid user_id: %w", ErrInvalidRequest, err)
 			handleGetTransactionsError(c, err)
 			return
 		}
 
-		transactions, err := transactionService.GetTransactions(userID)
+		transactions, err := transactionService.GetTransactions(userIDInt)
 		if err != nil {
 			err = fmt.Errorf("%w: %w", ErrGettingTransactions, err)
 			handleGetTransactionsError(c, err)

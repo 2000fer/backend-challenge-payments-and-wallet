@@ -21,9 +21,9 @@ type PaymentGatewayService interface {
 }
 
 type CreatePaymentRequest struct {
-	UserID uint64 `json:"user_id"`
-	Method string `json:"method"`
-	Amount int    `json:"amount"`
+	UserID uint64  `json:"user_id"`
+	Method string  `json:"method"`
+	Amount float64 `json:"amount"`
 }
 
 type CreatePaymentResponse struct {
@@ -32,7 +32,7 @@ type CreatePaymentResponse struct {
 	Error         string `json:"error,omitempty"`
 }
 
-func CreatePayment(paymentGatewayService PaymentGatewayService) gin.HandlerFunc {
+func CreatePayment(paymentsService PaymentGatewayService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestParams, err := extractRequestParams(c)
 		if err != nil {
@@ -45,7 +45,7 @@ func CreatePayment(paymentGatewayService PaymentGatewayService) gin.HandlerFunc 
 			Method: requestParams.Method,
 			Amount: requestParams.Amount,
 		}
-		transactionID, err := paymentGatewayService.CreatePayment(paymentRequest)
+		transactionID, err := paymentsService.CreatePayment(paymentRequest)
 		if err != nil {
 			handleCreatePaymentError(c, err)
 			return
@@ -91,7 +91,7 @@ func extractRequestParams(c *gin.Context) (CreatePaymentRequest, error) {
 	}
 
 	if requestParams.Amount <= 0 {
-		return CreatePaymentRequest{}, fmt.Errorf("%w: invalid amount %d", ErrInvalidRequest, requestParams.Amount)
+		return CreatePaymentRequest{}, fmt.Errorf("%w: invalid amount %.2f", ErrInvalidRequest, requestParams.Amount)
 	}
 	return requestParams, nil
 }

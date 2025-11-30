@@ -15,7 +15,7 @@ var (
 )
 
 type WalletService interface {
-	GetBalance(userID string) (float64, error)
+	GetBalance(userID uint64) (float64, error)
 }
 
 type GetBalanceResponse struct {
@@ -26,14 +26,14 @@ type GetBalanceResponse struct {
 func GetBalance(walletService WalletService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("user_id")
-		_, err := strconv.ParseUint(userID, 10, 64)
+		userIDInt, err := strconv.ParseUint(userID, 10, 64)
 		if err != nil {
 			err = fmt.Errorf("%w: invalid user_id: %w", ErrInvalidRequest, err)
 			handleGetBalanceError(c, err)
 			return
 		}
 
-		balance, err := walletService.GetBalance(userID)
+		balance, err := walletService.GetBalance(userIDInt)
 		if err != nil {
 			err = fmt.Errorf("%w: %w", ErrGettingBalance, err)
 			handleGetBalanceError(c, err)
