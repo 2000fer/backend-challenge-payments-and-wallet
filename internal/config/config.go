@@ -17,12 +17,12 @@ var configByScope = map[string]Config{
 	LocalScope: {
 		ServerPort:   ":8080",
 		GinMode:      gin.DebugMode,
-		DBConnString: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+		DBConnString: getDBConnectionString(),
 	},
 	StagingScope: {
 		ServerPort:   ":8080",
 		GinMode:      gin.TestMode,
-		DBConnString: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+		DBConnString: getDBConnectionString(),
 	},
 	ProductionScope: {
 		ServerPort:   ":8080",
@@ -46,4 +46,13 @@ func LoadConfig() Config {
 	}
 
 	return configByScope[scope]
+}
+
+func getDBConnectionString() string {
+	// Usar la variable de entorno o un valor por defecto
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		dbURL = "postgres://postgres:postgres@db:5432/wallet_db?sslmode=disable"
+	}
+	return dbURL
 }
