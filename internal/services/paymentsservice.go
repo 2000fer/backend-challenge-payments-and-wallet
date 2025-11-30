@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -16,13 +17,13 @@ var (
 )
 
 type PaymentStorage interface {
-	GetBalance(userID uint64) (float64, error)
-	CreatePaymentRequest(paymentRequest internal.PaymentRequest) (string, error)
-	UpdatePaymentRequest(transactionID string, status string) error
+	GetBalance(ctx context.Context, userID uint64) (float64, error)
+	CreatePaymentRequest(ctx context.Context, paymentRequest internal.PaymentRequest) (string, error)
+	UpdatePaymentRequest(ctx context.Context, paymentRequest internal.PaymentRequest, transactionID string, status string) error
 }
 
 type GatewayClient interface {
-	CreatePayment(paymentRequest internal.PaymentRequest) (string, error)
+	CreatePayment(ctx context.Context, paymentRequest internal.PaymentRequest) (string, error)
 }
 
 type PaymentService struct {
@@ -37,8 +38,8 @@ func NewPaymentService(storage PaymentStorage, gatewayClient GatewayClient) *Pay
 	}
 }
 
-func (s *PaymentService) CreatePayment(paymentRequest internal.PaymentRequest) (string, error) {
-	balance, err := s.storage.GetBalance(paymentRequest.UserID)
+func (s *PaymentService) CreatePayment(ctx context.Context, paymentRequest internal.PaymentRequest) (string, error) {
+	balance, err := s.storage.GetBalance(ctx, paymentRequest.UserID)
 	if err != nil {
 		return "", fmt.Errorf("%w: %s", ErrGettingBalance, err.Error())
 	}
@@ -48,23 +49,25 @@ func (s *PaymentService) CreatePayment(paymentRequest internal.PaymentRequest) (
 	}
 
 	// Create payment request in internal storage
-	transactionID, err := s.storage.CreatePaymentRequest(paymentRequest)
+	transactionID, err := s.storage.CreatePaymentRequest(ctx, paymentRequest)
 	if err != nil {
 		return "", fmt.Errorf("%w: %s", ErrCreatingPaymentRequest, err.Error())
 	}
 
 	// Send payment request to gateway
-	if _, err := s.gatewayClient.CreatePayment(paymentRequest); err != nil {
+	if _, err := s.gatewayClient.CreatePayment(ctx, paymentRequest); err != nil {
 		// Update transaction failed
-		if err := s.storage.UpdatePaymentRequest(transactionID, internal.PaymentStatusFailed); err != nil {
+		errUpdate := s.storage.UpdatePaymentRequest(ctx, paymentRequest, transactionID, internal.PaymentStatusFailed)
+		if errUpdate != nil {
 			// TODO: send to contingency plan
-			return "", fmt.Errorf("%w: %s", ErrUpdatingPaymentRequest, err.Error())
+			return "", fmt.Errorf("%w: %s", ErrUpdatingPaymentRequest, errUpdate.Error())
 		}
 		return "", fmt.Errorf("%w: %s", ErrPaymentGateway, err.Error())
 	}
 
 	// Update transaction success
-	if err := s.storage.UpdatePaymentRequest(transactionID, internal.PaymentStatusSuccess); err != nil {
+	err = s.storage.UpdatePaymentRequest(ctx, paymentRequest, transactionID, internal.PaymentStatusSuccess)
+	if err != nil {
 		// TODO: send to contingency plan
 		return "", fmt.Errorf("%w: %s", ErrUpdatingPaymentRequest, err.Error())
 	}

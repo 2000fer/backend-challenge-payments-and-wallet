@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -12,7 +13,7 @@ import (
 )
 
 type TransactionService interface {
-	GetTransactions(userID uint64) ([]internal.Transaction, error)
+	GetTransactions(ctx context.Context, userID uint64) ([]internal.Transaction, error)
 }
 
 var (
@@ -26,6 +27,7 @@ type GetTransactionsResponse struct {
 
 func GetTransactions(transactionService TransactionService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		ctx := c.Request.Context()
 		userID := c.Param("user_id")
 		userIDInt, err := strconv.ParseUint(userID, 10, 64)
 		if err != nil {
@@ -34,7 +36,7 @@ func GetTransactions(transactionService TransactionService) gin.HandlerFunc {
 			return
 		}
 
-		transactions, err := transactionService.GetTransactions(userIDInt)
+		transactions, err := transactionService.GetTransactions(ctx, userIDInt)
 		if err != nil {
 			err = fmt.Errorf("%w: %w", ErrGettingTransactions, err)
 			handleGetTransactionsError(c, err)

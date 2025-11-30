@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -17,7 +18,7 @@ var (
 )
 
 type PaymentGatewayService interface {
-	CreatePayment(paymentRequest internal.PaymentRequest) (string, error)
+	CreatePayment(ctx context.Context, paymentRequest internal.PaymentRequest) (string, error)
 }
 
 type CreatePaymentRequest struct {
@@ -34,6 +35,7 @@ type CreatePaymentResponse struct {
 
 func CreatePayment(paymentsService PaymentGatewayService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		ctx := c.Request.Context()
 		requestParams, err := extractRequestParams(c)
 		if err != nil {
 			handleCreatePaymentError(c, err)
@@ -45,7 +47,7 @@ func CreatePayment(paymentsService PaymentGatewayService) gin.HandlerFunc {
 			Method: requestParams.Method,
 			Amount: requestParams.Amount,
 		}
-		transactionID, err := paymentsService.CreatePayment(paymentRequest)
+		transactionID, err := paymentsService.CreatePayment(ctx, paymentRequest)
 		if err != nil {
 			handleCreatePaymentError(c, err)
 			return

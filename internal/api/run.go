@@ -1,14 +1,20 @@
 package api
 
 import (
+	"log"
+
+	"github.com/2000fer/backend-challenge-payments-and-wallet/internal/config"
 	"github.com/2000fer/backend-challenge-payments-and-wallet/internal/handlers"
 	"github.com/2000fer/backend-challenge-payments-and-wallet/internal/repository"
 	"github.com/2000fer/backend-challenge-payments-and-wallet/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
-func Init() *gin.Engine {
-	storage := repository.NewPostgresStorage()
+func Init(cfg config.Config) *gin.Engine {
+	storage, err := repository.NewPostgresStorage(cfg.DBConnString)
+	if err != nil {
+		log.Fatal("failed to create database connection pool: ", err)
+	}
 	gatewayClient := repository.NewGatewayClient()
 	WalletService := services.NewWalletService(storage)
 	PaymentService := services.NewPaymentService(storage, gatewayClient)

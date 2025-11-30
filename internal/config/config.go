@@ -7,24 +7,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var configByScope = map[string]Config{
-	LocalScope: {
-		ServerPort: ":8080",
-		GinMode:    gin.DebugMode,
-	},
-	StagingScope: {
-		ServerPort: ":8080",
-		GinMode:    gin.TestMode,
-	},
-	ProductionScope: {
-		ServerPort: ":8080",
-		GinMode:    gin.ReleaseMode,
-	},
+type Config struct {
+	ServerPort   string
+	GinMode      string
+	DBConnString string
 }
 
-type Config struct {
-	ServerPort string
-	GinMode    string
+var configByScope = map[string]Config{
+	LocalScope: {
+		ServerPort:   ":8080",
+		GinMode:      gin.DebugMode,
+		DBConnString: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+	},
+	StagingScope: {
+		ServerPort:   ":8080",
+		GinMode:      gin.TestMode,
+		DBConnString: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+	},
+	ProductionScope: {
+		ServerPort:   ":8080",
+		GinMode:      gin.ReleaseMode,
+		DBConnString: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+	},
 }
 
 const (
